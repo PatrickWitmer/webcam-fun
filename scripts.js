@@ -1,4 +1,3 @@
-  
 const video = document.querySelector('.player');
 const canvas = document.querySelector('.photo');
 const ctx = canvas.getContext('2d');
@@ -9,19 +8,11 @@ function getVideo() {
   navigator.mediaDevices.getUserMedia({ video: true, audio: false })
     .then(localMediaStream => {
       console.log(localMediaStream);
-    
-//  DEPRECIATION : 
-//       The following has been depreceated by major browsers as of Chrome and Firefox.
-//       video.src = window.URL.createObjectURL(localMediaStream);
-//       Please refer to these:
-//       Depreceated  - https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
-//       Newer Syntax - https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject
-      
       video.srcObject = localMediaStream;
       video.play();
     })
     .catch(err => {
-      console.error(`OH NO!!!`, err);
+      console.error('OH NO!!!', err);
     });
 }
 
@@ -33,36 +24,39 @@ function paintToCanvas() {
 
   return setInterval(() => {
     ctx.drawImage(video, 0, 0, width, height);
-    // take the pixels out
+    
+    //Take the pixels out
     let pixels = ctx.getImageData(0, 0, width, height);
-    // mess with them
+
+    //mess with them
     // pixels = redEffect(pixels);
+    pixels = rgbSplit(pixels);
+    ctx.globalAlpha = 0.1;
+    // pixels = greenScreen(pixels);
 
-    // pixels = rgbSplit(pixels);
-    // ctx.globalAlpha = 0.8;
-
-    pixels = greenScreen(pixels);
-    // put them back
+    //put them back
     ctx.putImageData(pixels, 0, 0);
+
   }, 16);
 }
 
 function takePhoto() {
-  // played the sound
+  //play the sound
   snap.currentTime = 0;
   snap.play();
 
-  // take the data out of the canvas
-  const data = canvas.toDataURL('image/jpeg');
+  //take the data out of the canvas
+  const data = canvas.toDataURL('images/jpeg');
   const link = document.createElement('a');
   link.href = data;
   link.setAttribute('download', 'handsome');
-  link.innerHTML = `<img src="${data}" alt="Handsome Man" />`;
-  strip.insertBefore(link, strip.firstChild);
+  link.innerHTML = `<img src=${data} alt="Handsome Man" />`;
+  strip.insertBefore(link, strip.firstChild); 
 }
 
+
 function redEffect(pixels) {
-  for (let i = 0; i < pixels.data.length; i+=4) {
+  for(let i = 0; i < pixels.data.length; i += 4) {
     pixels.data[i + 0] = pixels.data[i + 0] + 200; // RED
     pixels.data[i + 1] = pixels.data[i + 1] - 50; // GREEN
     pixels.data[i + 2] = pixels.data[i + 2] * 0.5; // Blue
@@ -71,10 +65,10 @@ function redEffect(pixels) {
 }
 
 function rgbSplit(pixels) {
-  for (let i = 0; i < pixels.data.length; i+=4) {
-    pixels.data[i - 150] = pixels.data[i + 0]; // RED
-    pixels.data[i + 500] = pixels.data[i + 1]; // GREEN
-    pixels.data[i - 550] = pixels.data[i + 2]; // Blue
+  for(let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i - 150] = pixels.data[i + 0] + 200; // RED
+    pixels.data[i + 100] = pixels.data[i + 1] - 50; // GREEN
+    pixels.data[i - 150] = pixels.data[i + 2] * 0.5; // Blue
   }
   return pixels;
 }
@@ -109,4 +103,3 @@ function greenScreen(pixels) {
 getVideo();
 
 video.addEventListener('canplay', paintToCanvas);
-
